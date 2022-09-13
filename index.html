@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" questions="IE=edge">
+    <meta name="viewport" questions="width=device-width, initial-scale=1.0">
+    <title>Test de Dechet</title>
+    <link rel="icon" href="./fav.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap" rel="stylesheet"> 
+
+    <style>
+        body {
+            font-family: 'Roboto Slab', serif;
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <main class="h-screen mt-4">
+        <div class="lg:w-11/12 h-4/5 min-h-max lg:rounded-3xl mx-auto bg-gray-900 text-white flex flex-col justify-center text-center p-4 shadow-xl">
+
+            <div id="main" class="text-center flex flex-col">
+                <h3 id="question" class="lg:text-4xl text-6xl p-8">Complète le test de personnalité du forum !</h3> 
+                <div id="nbInput"></div>
+                <button id="next" class="bg-blue-600 lg:text-3xl text-5xl rounded-lg p-4 mt-16 mb-8 shadow hover:bg-blue-700 focus:outline-none mx-auto transition duration-150">Commencer le test</button>           
+            </div>
+
+        </div>
+    </main>
+
+    <div class="lg:w-11/12 mx-auto pl-4 -mt-16"><span>Version alpha 0.1</span></div>
+</body>
+
+
+<script>
+    numberInput = 
+    `<div id="nbInput" class="flex flex-col custom-number-input text-black text-4xl mx-auto items-center justify-center">
+        <div class="flex flex-row my-12 lg:my-8">
+                <input id="value" type="number" min="0" oninput="validity.valid||(value='');" class="hidden" value="0"></input>
+                <button id="f-disagree" data-action="f-dis" class="my-auto h-24 lg:h-12 w-24 lg:w-12 rounded-full text-white border-4 hover:bg-red-600 hover:border-red-600 focus:bg-red-600 focus:border-red-600 focus:outline-none mx-4 transform duration-300 opacity-80">&nbsp</button>
+                <button id="disagree" data-action="dis" class="my-auto h-20 lg:h-10 w-20 lg:w-10 rounded-full text-white border-4 hover:bg-red-400 hover:border-red-400 focus:bg-red-400 focus:border-red-400 focus:outline-none mx-4 transform duration-300 opacity-80">&nbsp</button>
+                <button id="neutral" data-action="neu" class="my-auto h-16 lg:h-8 w-16 lg:w-8 rounded-full text-white border-4 hover:bg-gray-600 hover:border-gray-600 focus:bg-gray-600 focus:border-gray-600 focus:outline-none mx-4 transform duration-300 opacity-80">&nbsp</button>
+                <button id="agree" data-action="agr" class="my-auto h-20 lg:h-10 w-20 lg:w-10 rounded-full text-white border-4 hover:bg-blue-400 hover:border-blue-400 focus:bg-blue-400 focus:border-blue-400 focus:outline-none mx-4 transform duration-300 opacity-80">&nbsp</button>
+                <button id="f-agree" data-action="f-agr" class="my-auto h-24 lg:h-12 w-24 lg:w-12 rounded-full text-white border-4 hover:bg-blue-600 hover:border-blue-600 focus:bg-blue-600 focus:border-blue-600 focus:outline-none mx-4 transform duration-300 opacity-80">&nbsp</button>
+        </div>
+        <div class="flex flex-row justify-center gap-24">
+                <span class="text-white text-5xl lg:text-3xl my-auto">Pas d'accord</span>
+                <span class="text-white text-5xl lg:text-3xl my-auto">D'accord</span>
+        </div>
+    </div>`;
+
+    questions = {
+    1 : `Tu es Charlie`
+    ,2 : `En dessous d'1m80, tu n'existes pas aux yeux des femmes`
+    ,3 : `Les aides sociales représentent une part importante de tes revenus`
+    ,4 : `Tu as fait des études en rapport avec l'informatique ou l'histoire`
+    ,5 : `Tu apprécies les animes et/ou la culture pop Japonaise`
+    ,6 : `Ton hygiène corporelle laisse à désirer`
+    ,7 : `Les femmes peuvent être drôles`
+    ,8 : `L'immigration Africaine est une chance pour la France ?`
+    ,9 : `Vladimir Poutine est méchant`
+    ,10 : `Tu t'es fait vacciné contre le covid-19`
+    ,11 : `Tu utilises l'expression "lick les feet"`
+    ,12 : `Thomas Pesquet est un menteur ?`
+    ,13 : `Tu vis dans une résidence pavillonnaire`
+    ,14 : `Tu utilises régulièrement des répliques de Kaamelott`
+    ,15 : `Ton peintre Autrichien préféré: autre`
+    ,16 : `Bench&Cigars ne sont qu'une seule et même personne`
+    ,17 : `L'écologie est ta priorité numéro 1`
+    ,18 : `La vie de Mickey et Magalie a des bons côtés`
+    ,19 : `Tu aimes écouter du rap`
+    ,20 : `Il existe plus de 2 genres`
+    ,21 : `Tu es abonné à des comptes OnylFans`
+    ,22 : `Tu utilises le féminin pour parler de la covid-19`
+    ,23 : `Tu es BG mais timide`
+    ,24 : `Tu consommes des produits Halal`
+    ,25 : `Tu as regardé volontairement et apprécié le dernier Zevent`
+    ,26 : `Tu es toujours puceau`
+    ,27 : `Macron est le meilleur président de la Vème République ?`
+    }
+
+    blueButton = `Question suivante`
+
+    let score = 1;
+    let curr = 1;
+    let res = new Array(26)
+
+    function updateButton() {
+        nextButton = document.getElementById("next");
+        question = document.getElementById("question");
+        neutralButton = document.getElementById('neutral');
+        agreeButton = document.getElementById('agree');
+        fagreeButton = document.getElementById('f-agree');
+        disagreeButton = document.getElementById('disagree');
+        fdisagreeButton = document.getElementById('f-disagree');
+        nbInput = document.getElementById("nbInput");
+
+        nextButton.addEventListener("click", nextQuestion);
+        neutralButton.addEventListener("click", neutral);
+        agreeButton.addEventListener("click", agree);
+        fagreeButton.addEventListener("click", f_agree);
+        disagreeButton.addEventListener("click", disagree);
+        fdisagreeButton.addEventListener("click", f_disagree);
+    }
+
+    function updateScore() {
+        const target = document.getElementById("value");
+        if (target) {
+            let value = Number(target.value);
+            if (curr > 0)
+              res[curr-1] = value;
+            console.log(res);
+        }
+    }
+
+    function finishTest() {
+
+      let personalities = {
+        'Chouffin' : (res[4] + res[6] + res[14] + res[25])/4,
+        'Facho' : (6-res[26] + 6-res[8] + res[15] + res[24])/4,
+        'Boomer' : (res[1] + res[13] + res[18])/3,
+        'Golem' : (res[9] + res[10] + res[13] + res[17] + res[20] + res[22] + res[27])/7,
+        'Mage Noir' : (res[26] + res[21] + res[23])/3
+      };
+
+      let ascendants = {
+        'Kikoojap' : res[5],
+        'QLF' : (res[19] + res[24])/2,
+        'RSAiste' : res[3],
+        'Zinzin' : (res[11] + res[21] + res[16])/3,
+        'Redpill' : (res[12] + res[2] + res[16])/3,
+      };
+
+      const ima = {
+        'Chouffin': './chouffin.jpeg',
+        'Facho' : './facho.jpeg',
+        'Boomer' : './boomer.jpeg',
+        'Golem' : './golem.jpeg',
+        'Mage Noir' : './mage.jpeg',
+        'Kikoojap': './kj.jpeg',
+        'QLF' : './qlf.jpeg',
+        'RSAiste' : './rsa.jpeg',
+        'Zinzin' : './bol.jpeg',
+        'Redpill' : './redpill.jpeg',
+      }
+
+      let personality = Object.keys(personalities).reduce((a, b) => personalities[a] > personalities[b] ? a : b);
+      let ascendant = Object.keys(ascendants).reduce((a, b) => ascendants[a] > ascendants[b] ? a : b);
+      finish = `
+              <img src=${ima[personality]} class="h-64 lg:h-32 w-64 lg:w-32 rounded-full border-4 shadow mx-auto"></img>
+              <img src=${ima[ascendant]} class="h-32 lg:h-16 w-32 lg:w-16 rounded-full border-4 mx-auto -mt-4"></img>
+              <h3 id="question" class="lg:text-4xl text-6xl p-8">Tu es un ${personality} <br> Ascendant ${ascendant}</h3>`
+      const main = document.getElementById("main");
+      main.innerHTML = finish;
+    }
+
+    function nextQuestion() {
+        const target = document.getElementById('value')
+        if (!target || target.value != 0) {
+            updateScore();
+            if (curr <= 27 ) {
+                question.innerText = questions[curr];
+                nbInput.innerHTML = numberInput;
+                nextButton.innerText = blueButton;
+            }
+            else {
+                finishTest();
+            }
+
+            updateButton();
+            curr += 1;
+      }
+    }
+
+    function f_disagree(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="f-agr"]'
+      );
+      const target = document.getElementById('value')
+      target.value = 1;
+    }
+
+    function disagree(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="agr"]'
+      );
+      const target = document.getElementById('value')
+      target.value = 2;
+    }
+
+    function neutral(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="agr"]'
+      );
+      const target = document.getElementById('value')
+      let value = Number(target.value);
+      target.value = 3;
+    }
+
+    function f_disagree(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="f-agr"]'
+      );
+      const target = document.getElementById('value')
+      target.value = 1;
+    }
+  
+    function agree(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="agr"]'
+      );
+      const target = document.getElementById('value')
+      target.value = 4;
+    }
+
+    function f_agree(e) {
+      const btn = e.target.parentNode.parentElement.querySelector(
+        'button[data-action="f-agr"]'
+      );
+      const target = document.getElementById('value')
+      target.value = 5;
+    }
+
+    let nextButton = document.getElementById("next");
+    let question = document.getElementById("question");
+
+    nextButton.addEventListener("click", nextQuestion);
+  </script>
+</html>
